@@ -3,6 +3,8 @@ import datetime
 import pathlib
 import warnings
 
+import loadshedding_coct_stage_query.schedule
+
 def main(path: str, tag: str):
     path = pathlib.Path(path)
 
@@ -27,10 +29,13 @@ def main(path: str, tag: str):
 
         isoformats = [line[0] for line in lines]
         timestamps = [int(datetime.datetime.fromisoformat(isoformat).timestamp()) for isoformat in isoformats]
-        assert len(timestamps) == len(set(timestamps)), f"Duplicate timestamps in '{path}'"
-        for ts0, ts1 in zip(timestamps, sorted(timestamps)):
-            assert ts0 == ts1, f"Timestamps in '{path}' not in sorted order"
+
         lines = [(timestamp, stage) for timestamp, (_, stage) in zip(timestamps, lines)]
+
+        try:
+            loadshedding_coct_stage_query.schedule.Schedule(lines)
+        except AssertionError as e:
+            raise AssertionError(f'Error when converting schedule "{path}"') from e
 
         with open(file_destination, 'w') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter=',')
