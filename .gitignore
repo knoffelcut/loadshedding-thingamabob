@@ -1,0 +1,14 @@
+# Visual Studio Code
+.vscode/*
+
+# Distribution / packaging
+.venv/*
+*/.venv/*
+
+# Misc Data
+*.csv
+
+# Messy Python files
+__pycache__/*
+*.pyc
+*.lprof
