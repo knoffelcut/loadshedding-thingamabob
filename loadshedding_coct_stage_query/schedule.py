@@ -13,6 +13,22 @@ class Schedule(object):
 
         self.check_schedule()
 
+    def __str__(self):
+        time_ranges = \
+            [('epoch', datetime.datetime.fromtimestamp(self.timestamps[0]).isoformat())] + \
+            [
+                (datetime.datetime.fromtimestamp(alpha).isoformat(), datetime.datetime.fromtimestamp(omega).isoformat())
+                for alpha, omega in zip(self.timestamps, self.timestamps[1:])
+            ] + \
+            [(datetime.datetime.fromtimestamp(self.timestamps[0]).isoformat(), 'ragnarok')]
+
+        stages = [0, ] + self.stages
+        assert len(time_ranges) == len(stages)
+
+        string = '\n'.join(f'[{alpha:24} - {omega:24}): {stage:2}' for (alpha, omega), stage in zip(time_ranges, stages))
+
+        return string
+
     def set_schedule(self, schedule):
         self.schedule = schedule
         self.timestamps = [int(line[0]) for line in self.schedule]
@@ -65,3 +81,6 @@ if __name__ == '__main__':
     print(schedule.stage('2022-03-21 20:00'))  # 2
     print(schedule.stage('2022-03-21 22:05'))  # 0
     print(schedule.stage('2022-03-22 22:05'))  # 3
+
+    print()
+    print(schedule)
