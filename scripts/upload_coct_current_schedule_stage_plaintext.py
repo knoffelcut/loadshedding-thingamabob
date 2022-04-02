@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('--url', type=str, default='https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/load-shedding-and-outages',
         help='Path to the CoCT website with loadshedding information'
         )
-    parser.add_argument('--table_name', type=str, default='loadshedding-schedules',
+    parser.add_argument('--table_name', type=str, default='loadshedding',
         help='DynamoDB Table Name.'
         )
     parser.add_argument('--region_loadshedding', type=str, default='coct',
@@ -26,6 +26,7 @@ if __name__ == '__main__':
 
     loadshedding_coct_stage_query.query_and_upload.query_and_upload(
         **vars(args),
+        suffix='plaintext',
         f_scrape=scraping.scraping.extract_coct_loadshedding_text,
         f_datapack=lambda data: '\n'.join(data)
         )

@@ -7,7 +7,7 @@ import urllib.request
 import scraping.scraping
 import database.dynamodb
 
-def query_and_upload(url: str, table_name: str, region_loadshedding: str, date: datetime.datetime, attempts, f_scrape, f_datapack):
+def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts, f_scrape, f_datapack):
     while True:
         try:
             with urllib.request.urlopen(url) as response:
@@ -28,7 +28,7 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, date: 
 
         break
 
-    primary_key = f"{region_loadshedding}-{'plaintext'}"
+    partition_key = f"{region_loadshedding}-{suffix}"
 
     data = f_scrape(html)
     data = f_datapack(data)
@@ -37,7 +37,7 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, date: 
     table = dynamodb.Table(table_name)
 
     try:
-        timestamp_recent, data_recent = database.dynamodb.get_most_recent_scraped_data(table, primary_key)
+        timestamp_recent, data_recent = database.dynamodb.get_most_recent_scraped_data(table, partition_key)
         print(f'Timestamp Recent = {timestamp_recent} ({datetime.datetime.fromtimestamp(timestamp_recent).isoformat()})')
         print(f'Data Recent =      {data_recent}')
     except database.dynamodb.EmptyDynamoResponse as e:
@@ -50,7 +50,7 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, date: 
         print('Uploading data to database')
         timestamp = int(date.timestamp())
         item = {
-            'region': primary_key,
+            'field': partition_key,
             'timestamp': timestamp,
             'data': data,
         }

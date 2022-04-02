@@ -6,7 +6,7 @@ class EmptyDynamoResponse(Exception):
 
 def get_most_recent_scraped_data(table, primary_key: str):
     response = table.query(
-        KeyConditionExpression=boto3.dynamodb.conditions.Key('region').eq(primary_key), ScanIndexForward=False, Limit=1
+        KeyConditionExpression=boto3.dynamodb.conditions.Key('field').eq(primary_key), ScanIndexForward=False, Limit=1
         )
     assert response['ResponseMetadata']['HTTPStatusCode'] == 200
 
@@ -18,7 +18,7 @@ def get_most_recent_scraped_data(table, primary_key: str):
     assert len(items) == 1
 
     item = items[0]
-    assert item['region'] == primary_key
+    assert item['field'] == primary_key
 
     timestamp = int(item['timestamp'])
 

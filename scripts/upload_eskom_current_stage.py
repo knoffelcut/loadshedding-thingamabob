@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('--url', type=str, default='http://loadshedding.eskom.co.za/LoadShedding/GetStatus',
         help='Eskom API URL to get the current stage'
         )
-    parser.add_argument('--table_name', type=str, default='loadshedding-schedules',
+    parser.add_argument('--table_name', type=str, default='loadshedding',
         help='DynamoDB Table Name.'
         )
     parser.add_argument('--region_loadshedding', type=str, default='national',
@@ -26,6 +26,7 @@ if __name__ == '__main__':
 
     loadshedding_coct_stage_query.query_and_upload.query_and_upload(
         **vars(args),
+        suffix='current-stage',
         f_scrape=scraping.scraping.extract_eskom_loadshedding_stage,
         f_datapack=lambda x: x
         )

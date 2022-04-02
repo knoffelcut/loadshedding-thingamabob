@@ -3,12 +3,15 @@ import pprint
 
 import boto3
 
-def main(path: str, table_name: str, region: str, date: datetime.datetime):
+def main(path: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime):
     timestamp = int(date.timestamp())
     with open(path) as f:
         data = f.read()
+
+    partition_key = f"{region_loadshedding}-{suffix}"
+
     item = {
-        'region': region,
+        'field': partition_key,
         'timestamp': timestamp,
         'data': data,
     }
@@ -29,10 +32,10 @@ if __name__ == '__main__':
     parser.add_argument('--path', type=str, default='schedules/test0.csv',
         help='Path to ".csv" schedule file.'
         )
-    parser.add_argument('--table_name', type=str, default='loadshedding-schedules',
+    parser.add_argument('--table_name', type=str, default='loadshedding',
         help='DynamoDB Table Name.'
         )
-    parser.add_argument('--region', type=str, default='coct',
+    parser.add_argument('--region_loadshedding', type=str, default='coct',
         help='Schedule region.'
         )
     parser.add_argument('--date', type=datetime.datetime.fromisoformat, default=datetime.datetime.now().isoformat(),
@@ -40,4 +43,7 @@ if __name__ == '__main__':
         )
     args = parser.parse_args()
 
-    main(**vars(args))
+    main(
+        **vars(args),
+        suffix='loadshedding-schedule-csv'
+        )
