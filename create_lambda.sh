@@ -1,15 +1,15 @@
 #!/bin/bash
 # Based on https://github.com/m3h/loadshedding-stage-api/blob/master/1_create_lambda_zip.sh
 
-FUNCTION_FILE="scripts/upload_eskom_current_stage.py"
-LAMBDA_NAME="upload_eskom_current_stage"
+FUNCTION_FILE=${1:-"scripts/upload_eskom_current_stage.py"}
+LAMBDA_NAME=${2:-"upload_eskom_current_stage"}
 
 OUTPUT_ZIP=${LAMBDA_NAME}-deployment-package.zip
 STAGING_DIR=./${LAMBDA_NAME}-aws-deploy
 
 rm -rf "$OUTPUT_ZIP" "$STAGING_DIR"
 mkdir "$STAGING_DIR"
-cp -r ./database ./loadshedding_coct_stage_query ./scraping "$STAGING_DIR"
+cp -r ./database ./loadshedding_coct_stage_query ./scraping ./utility "$STAGING_DIR"
 cp -r ${FUNCTION_FILE} "${STAGING_DIR}/lambda_function.py"
 
 
