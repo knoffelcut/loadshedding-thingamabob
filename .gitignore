@@ -12,3 +12,6 @@
 __pycache__/*
 *.pyc
 *.lprof
+
+# AWS
+*-deployment-package.zip
