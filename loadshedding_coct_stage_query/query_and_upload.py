@@ -1,5 +1,5 @@
 import datetime
-import pprint
+import logging
 
 import boto3
 import urllib.request
@@ -8,6 +8,8 @@ import scraping.scraping
 import database.dynamodb
 
 def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts, f_scrape, f_datapack):
+    logger = logging.getLogger()
+
     while True:
         try:
             with urllib.request.urlopen(url) as response:
@@ -17,8 +19,7 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
                 html = response.read()
         except AssertionError as e:
             # TODO Send email via SNS
-            print(f'HTML Request Failed')
-            pprint.pprint(response)
+            logger.error(f'HTML Request Failed\nResponse: {response}')
 
             if attempts > 0:
                 attempts -= 1
@@ -38,16 +39,18 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
 
     try:
         timestamp_recent, data_recent = database.dynamodb.get_most_recent_scraped_data(table, partition_key)
-        print(f'Timestamp Recent = {timestamp_recent} ({datetime.datetime.fromtimestamp(timestamp_recent).isoformat()})')
-        print(f'Data Recent =      {data_recent}')
+        logger.info(f'Timestamp Recent = {timestamp_recent} ({datetime.datetime.fromtimestamp(timestamp_recent).isoformat()})')
+        logger.info(f'Data Recent =      {data_recent}')
     except database.dynamodb.EmptyDynamoResponse as e:
         timestamp_recent, data_recent = None, None
-        print(f'Handled exception:\n{e}')
-        print(f'No data is available')
+        logger.warning(
+            f'DynamoDB table is empty for partition key: {partition_key}'
+            f'Exception: {e}'
+            )
 
     if data_recent is None or data != data_recent:
         # Upload the data to dynamodb
-        print('Uploading data to database')
+        logger.info('Uploading data to database')
         timestamp = int(date.timestamp())
         item = {
             'field': partition_key,
@@ -59,7 +62,7 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
             Item=item
         )
 
-        pprint.pprint(response)
+        logger.info(f'response: {response}')
         assert response['ResponseMetadata']['HTTPStatusCode'] == 200
     else:
-        print('Scraped data is identical to most recent data. Skipping upload')
+        logger.info('Scraped data is identical to most recent data. Skipping upload')

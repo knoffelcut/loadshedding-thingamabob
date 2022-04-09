@@ -1,4 +1,5 @@
 
+import pathlib
 import argparse
 import datetime
 
@@ -6,6 +7,7 @@ import scraping.scraping
 import loadshedding_coct_stage_query.query_and_upload
 
 import utility.lambda_helper
+import utility.logger
 
 def get_parser():
     parser = argparse.ArgumentParser(description='Uploads the loadshedding schedule specific section of the CoCT website to DynamoDB')
@@ -36,13 +38,16 @@ def main(args: argparse.Namespace):
         )
 
 if __name__ == '__main__':
+    utility.logger.setup_logger_cli(pathlib.PurePath(__file__).stem)
+
     parser = get_parser()
     args = parser.parse_args()
     main(args)
 
 def lambda_handler(event, context):
-    parser = get_parser()
+    utility.logger.setup_logger_lambda()
 
+    parser = get_parser()
     args = utility.lambda_helper.parse_events_as_args(parser, event)
     main(args)
 
