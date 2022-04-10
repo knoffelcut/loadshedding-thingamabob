@@ -17,9 +17,14 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
                 assert response.status == 200
 
                 html = response.read()
-        except AssertionError as e:
+
+                data = f_scrape(html)
+        except (AssertionError, scraping.scraping.ScrapeError) as e:
             # TODO Send email via SNS
-            logger.error(f'HTML Request Failed\nResponse: {response}')
+            if isinstance(e, AssertionError):
+                logger.error(f'HTML Request Failed\nResponse: {response}')
+            elif isinstance(e, scraping.scraping.ScrapeError):
+                logger.error(f'Scraping Response Failed\nException: {e}')
 
             if attempts > 0:
                 attempts -= 1
@@ -28,14 +33,12 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
                 raise e
 
         break
-
-    partition_key = f"{region_loadshedding}-{suffix}"
-
-    data = f_scrape(html)
     data = f_datapack(data)
 
     dynamodb = boto3.resource('dynamodb', region_name='af-south-1')
     table = dynamodb.Table(table_name)
+
+    partition_key = f"{region_loadshedding}-{suffix}"
 
     try:
         timestamp_recent, data_recent = database.dynamodb.get_most_recent_scraped_data(table, partition_key)

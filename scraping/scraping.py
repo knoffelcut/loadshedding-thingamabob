@@ -1,5 +1,8 @@
 import bs4
 
+class ScrapeError(ValueError):
+    pass
+
 def soup_me(soup: bs4.BeautifulSoup):
     """Converts soup to a beautifulsoup4 object
 
@@ -17,13 +20,16 @@ def extract_coct_loadshedding_text(soup: bs4.BeautifulSoup):
     Args:
         soup (bs4.BeautifulSoup or markup): CoCT HTML
     """
-    soup = soup_me(soup)
+    try:
+        soup = soup_me(soup)
 
-    soup = soup.find_all("p", class_="lrg")[0]
-    lines = [line.strip() for line in soup.get_text().splitlines()]
-    lines = [line for line in lines if line != '']
+        soup = soup.find_all("p", class_="lrg")[0]
+        lines = [line.strip() for line in soup.get_text().splitlines()]
+        lines = [line for line in lines if line != '']
 
-    return lines
+        return lines
+    except Exception as e:
+        raise ScrapeError from e
 
 def extract_eskom_loadshedding_stage(response_text: str):
     """Extracts the current Eskom loadshedding stage
@@ -34,9 +40,12 @@ def extract_eskom_loadshedding_stage(response_text: str):
     Returns:
         int: Current national loadshedding stage
     """
-    stage = int(response_text)
-    stage = stage - 1
-    return stage
+    try:
+        stage = int(response_text)
+        stage = stage - 1
+        return stage
+    except Exception as e:
+        raise ScrapeError from e
 
 
 if __name__ == '__main__':
