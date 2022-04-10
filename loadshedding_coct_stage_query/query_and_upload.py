@@ -1,5 +1,6 @@
 import datetime
 import logging
+import pprint
 
 import boto3
 import urllib.request
@@ -12,17 +13,17 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
 
     while True:
         try:
-            with urllib.request.urlopen(url) as response:
+            with urllib.request.urlopen(url) as response_dynamodb:
                 # TODO Retry like 5 times
-                assert response.status == 200
+                assert response_dynamodb.status == 200
 
-                html = response.read()
+                html = response_dynamodb.read()
 
                 data = f_scrape(html)
         except (AssertionError, scraping.scraping.ScrapeError) as e:
             # TODO Send email via SNS
             if isinstance(e, AssertionError):
-                logger.error(f'HTML Request Failed\nResponse: {response}')
+                logger.error(f'HTML Request Failed\nResponse: {response_dynamodb}')
             elif isinstance(e, scraping.scraping.ScrapeError):
                 logger.error(f'Scraping Response Failed\nException: {e}')
 
@@ -61,11 +62,30 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
             'data': data,
         }
 
-        response = table.put_item(
+        response_dynamodb = table.put_item(
             Item=item
         )
 
-        logger.info(f'response: {response}')
-        assert response['ResponseMetadata']['HTTPStatusCode'] == 200
+        logger.info(f'dynamodb response: {response_dynamodb}')
+
+        # Publish change via SNS
+        logger.info('Publishing Change via SNS')
+        client_sns = boto3.client('sns', region_name='af-south-1')
+        response_sns = client_sns.publish(
+            TopicArn='arn:aws:sns:af-south-1:273749684738:loadshedding-deltas',
+            Message=pprint.pformat({
+                'data': data,
+                'url': url,
+                'table_name': table_name,
+                'region_loadshedding': region_loadshedding,
+            }, indent=4),
+            Subject='Loadshedding Scraper delta detected'
+        )
+
+        logger.info(f'SNS response: {response_sns}')
+
+        # Some assertions
+        assert response_dynamodb['ResponseMetadata']['HTTPStatusCode'] == 200
+        assert response_sns['ResponseMetadata']['HTTPStatusCode'] == 200
     else:
         logger.info('Scraped data is identical to most recent data. Skipping upload')
