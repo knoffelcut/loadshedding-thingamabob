@@ -4,7 +4,7 @@ import argparse
 import datetime
 
 import scraping.scraping
-import loadshedding_coct_stage_query.query_and_upload
+import loadshedding_thingamabob.query_and_upload
 
 import utility.lambda_helper
 import utility.logger
@@ -30,7 +30,7 @@ def get_parser():
     return parser
 
 def main(args: argparse.Namespace):
-    return loadshedding_coct_stage_query.query_and_upload.query_and_upload(
+    return loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
         suffix='plaintext',
         f_scrape=scraping.scraping.extract_coct_loadshedding_text,

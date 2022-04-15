@@ -5,7 +5,7 @@ import tempfile
 
 import boto3
 
-import loadshedding_coct_stage_query.schedule
+import loadshedding_thingamabob.schedule
 
 # From https://stackoverflow.com/a/12809659
 #  and https://blog.yadutaf.fr/2012/10/07/common-dynamodb-questionsmisconceptionsrecipes/
@@ -31,7 +31,7 @@ def main(table_name: str, region_loadshedding: str, suffix: str):
     with tempfile.NamedTemporaryFile('w', delete=False) as f:
         f.write(item['data'])
 
-    schedule = loadshedding_coct_stage_query.schedule.Schedule.from_file(f.name)
+    schedule = loadshedding_thingamabob.schedule.Schedule.from_file(f.name)
     print(schedule)
 
     os.remove(f.name)

@@ -9,7 +9,7 @@ STAGING_DIR=./${LAMBDA_NAME}-aws-deploy
 
 rm -rf "$OUTPUT_ZIP" "$STAGING_DIR"
 mkdir "$STAGING_DIR"
-cp -r ./database ./loadshedding_coct_stage_query ./scraping ./utility "$STAGING_DIR"
+cp -r ./database ./loadshedding_thingamabob ./scraping ./utility "$STAGING_DIR"
 cp -r ${FUNCTION_FILE} "${STAGING_DIR}/lambda_function.py"
 
 

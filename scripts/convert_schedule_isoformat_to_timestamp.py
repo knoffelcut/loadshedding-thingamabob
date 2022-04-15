@@ -3,7 +3,7 @@ import datetime
 import pathlib
 import warnings
 
-import loadshedding_coct_stage_query.schedule
+import loadshedding_thingamabob.schedule
 
 def main(path: str, tag: str):
     path = pathlib.Path(path)
@@ -33,7 +33,7 @@ def main(path: str, tag: str):
         lines = [(timestamp, stage) for timestamp, (_, stage) in zip(timestamps, lines)]
 
         try:
-            loadshedding_coct_stage_query.schedule.Schedule(lines)
+            loadshedding_thingamabob.schedule.Schedule(lines)
         except AssertionError as e:
             raise AssertionError(f'Error when converting schedule "{path}"') from e
 
