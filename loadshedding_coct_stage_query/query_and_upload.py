@@ -25,7 +25,8 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
             if isinstance(e, AssertionError):
                 logger.error(f'HTML Request Failed\nResponse: {response_dynamodb}')
             elif isinstance(e, scraping.scraping.ScrapeError):
-                logger.error(f'Scraping Response Failed\nException: {e}')
+                logger.error(f'Scraping Response Failed\nException: {str(e)}')
+                logger.error(f'Raw scraped data: {str(html)}')
 
             if attempts > 0:
                 attempts -= 1
