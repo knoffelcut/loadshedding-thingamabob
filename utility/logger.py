@@ -12,6 +12,8 @@ def setup_logger_cli(filename_stem):
     file_handler.setFormatter(log_formatter)
     logger.addHandler(file_handler)
 
+    return logger
+
 def setup_logger_lambda():
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -19,3 +21,5 @@ def setup_logger_lambda():
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(log_formatter)
     logger.addHandler(stream_handler)
+
+    return logger

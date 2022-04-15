@@ -32,7 +32,7 @@ def get_parser():
 def main(args: argparse.Namespace):
     return loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
-        suffix='plaintext',
+        suffix='scraped',
         f_scrape=scraping.scraping.extract_coct_loadshedding_text,
         f_datapack=lambda data: '\n'.join(data)
         )

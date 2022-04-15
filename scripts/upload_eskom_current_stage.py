@@ -31,7 +31,7 @@ def get_parser():
 def main(args: argparse.Namespace):
     return loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
-        suffix='current-stage',
+        suffix='scraped',
         f_scrape=scraping.scraping.extract_eskom_loadshedding_stage,
         f_datapack=lambda x: x
         )

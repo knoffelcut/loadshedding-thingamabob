@@ -39,7 +39,7 @@ def main(table_name: str, region_loadshedding: str, suffix: str):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Upload a schedule to boto3')
+    parser = argparse.ArgumentParser(description='Get the most recent entry from the dynamodb table')
     parser.add_argument('--table_name', type=str, default='loadshedding',
         help='DynamoDB Table Name.'
         )

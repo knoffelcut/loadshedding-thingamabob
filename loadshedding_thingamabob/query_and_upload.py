@@ -7,6 +7,7 @@ import urllib.request
 
 import scraping.scraping
 import database.dynamodb
+import loadshedding_thingamabob.query_dynamodb
 
 def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts, f_scrape, f_datapack):
     logger = logging.getLogger()
@@ -40,18 +41,11 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
     dynamodb = boto3.resource('dynamodb', region_name='af-south-1')
     table = dynamodb.Table(table_name)
 
-    partition_key = f"{region_loadshedding}-{suffix}"
+    timestamp_recent, data_recent = loadshedding_thingamabob.query_dynamodb.query_recent(
+        None, region_loadshedding, suffix, table
+        )
 
-    try:
-        timestamp_recent, data_recent = database.dynamodb.get_most_recent_scraped_data(table, partition_key)
-        logger.info(f'Timestamp Recent = {timestamp_recent} ({datetime.datetime.fromtimestamp(timestamp_recent).isoformat()})')
-        logger.info(f'Data Recent =      {data_recent}')
-    except database.dynamodb.EmptyDynamoResponse as e:
-        timestamp_recent, data_recent = None, None
-        logger.warning(
-            f'DynamoDB table is empty for partition key: {partition_key}'
-            f'Exception: {e}'
-            )
+    partition_key = f"{region_loadshedding}-{suffix}"
 
     if data_recent is None or data != data_recent:
         # Upload the data to dynamodb
