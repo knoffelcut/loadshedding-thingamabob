@@ -1,54 +1,56 @@
-import os
+import pathlib
+import argparse
 import datetime
 import pprint
-import tempfile
+import json
 
-import boto3
-
+import utility.lambda_helper
+import utility.logger
+import loadshedding_thingamabob.query_dynamodb
 import loadshedding_thingamabob.schedule
 
-# From https://stackoverflow.com/a/12809659
-#  and https://blog.yadutaf.fr/2012/10/07/common-dynamodb-questionsmisconceptionsrecipes/
-def main(table_name: str, region_loadshedding: str, suffix: str):
-    dynamodb = boto3.resource('dynamodb', region_name='af-south-1')
-    table = dynamodb.Table(table_name)
-
-    partition_key = f"{region_loadshedding}-{suffix}"
-    response = table.query(
-        KeyConditionExpression=boto3.dynamodb.conditions.Key('field').eq(partition_key), ScanIndexForward=False, Limit=1
-        )
-    assert response['ResponseMetadata']['HTTPStatusCode'] == 200
-
-    items = response['Items']
-    assert len(items) == 1, len(items)
-
-    item = items[0]
-    assert item['field'] == partition_key
-
-    timestamp = int(item['timestamp'])
-    print(f'Timestamp = {timestamp} ({datetime.datetime.fromtimestamp(timestamp).isoformat()})')
-
-    with tempfile.NamedTemporaryFile('w', delete=False) as f:
-        f.write(item['data'])
-
-    schedule = loadshedding_thingamabob.schedule.Schedule.from_file(f.name)
-    print(schedule)
-
-    os.remove(f.name)
-
-if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser(description='Get the most recent entry from the dynamodb table')
+def get_parser():
+    parser = argparse.ArgumentParser(description='Prints the most recent scraped data')
     parser.add_argument('--table_name', type=str, default='loadshedding',
         help='DynamoDB Table Name.'
         )
-    parser.add_argument('--region_loadshedding', type=str, default='coct',
-        help='Schedule region.'
+    parser.add_argument('--region_loadshedding', type=str, default='coct',  # National
+        help='Loadshedding Stage Schedule region.'
         )
-    args = parser.parse_args()
 
-    main(
+    return parser
+
+def main(args: argparse.Namespace):
+    timestamp_recent, data_recent = loadshedding_thingamabob.query_dynamodb.query_recent(
         **vars(args),
-        suffix='loadshedding-schedule-csv'
+        suffix='loadshedding-schedule-csv',
         )
+
+    return timestamp_recent, data_recent
+
+if __name__ == '__main__':
+    logger = utility.logger.setup_logger_cli(pathlib.PurePath(__file__).stem)
+
+    parser = get_parser()
+    args = parser.parse_args()
+    timestamp_recent, data_recent = main(args)
+
+    schedule = loadshedding_thingamabob.schedule.Schedule.from_string(data_recent)
+
+    logger.info(f'Timestamp Recent: {timestamp_recent} ({datetime.datetime.fromtimestamp(timestamp_recent).isoformat()})')
+    logger.info(f'Data Recent:\n{schedule}')
+
+def lambda_handler(event: dict, context):
+    utility.logger.setup_logger_lambda()
+
+    parser = get_parser()
+    args = utility.lambda_helper.parse_events_as_args(parser, event)
+    timestamp_recent, data_recent = main(args)
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps({
+            'timestamp': timestamp_recent,
+            'schedule_csv': data_recent
+        }),
+    }

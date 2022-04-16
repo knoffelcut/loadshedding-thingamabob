@@ -2,10 +2,9 @@ import pathlib
 import argparse
 import datetime
 
-import loadshedding_thingamabob.query_dynamodb
-
 import utility.lambda_helper
 import utility.logger
+import loadshedding_thingamabob.query_dynamodb
 
 def get_parser():
     parser = argparse.ArgumentParser(description='Prints the most recent scraped data')

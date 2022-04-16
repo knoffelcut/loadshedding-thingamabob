@@ -18,7 +18,7 @@ def main(path: str, tag: str):
         raise FileNotFoundError(f"No file or directory named '{path}' exists")
 
     for path in paths:
-        file_destination = (path.parent / path.stem[:5]).with_suffix('.csv')
+        file_destination = (path.parent / path.stem[:-len(tag)]).with_suffix('.csv')
         print(f"Converting '{path}' to '{file_destination}'")
 
         with open(path) as csv_file:
@@ -33,9 +33,10 @@ def main(path: str, tag: str):
         lines = [(timestamp, stage) for timestamp, (_, stage) in zip(timestamps, lines)]
 
         try:
-            loadshedding_thingamabob.schedule.Schedule(lines)
+            schedule = loadshedding_thingamabob.schedule.Schedule(lines)
         except AssertionError as e:
             raise AssertionError(f'Error when converting schedule "{path}"') from e
+        print(f'Schedule:\n{schedule}')
 
         with open(file_destination, 'w') as csv_file:
             csv_writer = csv.writer(csv_file, delimiter=',')

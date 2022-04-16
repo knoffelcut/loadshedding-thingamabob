@@ -46,12 +46,18 @@ class Schedule(object):
             assert 0 <= stage <= 8
 
     @staticmethod
-    def from_file(path:str):
+    def from_file(path: str):
         with open(path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             schedule = []
             for row in csv_reader:
                 schedule.append(row)
+
+        return Schedule(schedule)
+
+    @staticmethod
+    def from_string(data: str):
+        schedule = [row for row in csv.reader(data.split('\n'), delimiter=',') if row]
 
         return Schedule(schedule)
 
