@@ -1,6 +1,7 @@
 import datetime
 import logging
 import pprint
+from typing import Callable
 
 import boto3
 import urllib.request
@@ -9,7 +10,10 @@ import scraping.scraping
 import database.dynamodb
 import loadshedding_thingamabob.query_dynamodb
 
-def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts, f_scrape, f_datapack):
+def query_and_upload(
+    url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts: int,
+    f_scrape: Callable, f_datapack: Callable,
+    sns_notify: bool, database_write: bool):
     logger = logging.getLogger()
 
     while True:
@@ -36,7 +40,10 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
                 raise e
 
         break
+    timestamp = int(date.timestamp())
     data = f_datapack(data)
+    logger.info(f'Timestamp = {timestamp} ({datetime.datetime.fromtimestamp(timestamp).isoformat()})')
+    logger.info(f'Data =      {data}')
 
     dynamodb = boto3.resource('dynamodb', region_name='af-south-1')
     table = dynamodb.Table(table_name)
@@ -49,38 +56,41 @@ def query_and_upload(url: str, table_name: str, region_loadshedding: str, suffix
 
     if data_recent is None or data != data_recent:
         # Upload the data to dynamodb
-        logger.info('Uploading data to database')
-        timestamp = int(date.timestamp())
-        item = {
-            'field': partition_key,
-            'timestamp': timestamp,
-            'data': data,
-        }
+        if database_write:
+            logger.info('Uploading data to database')
+            item = {
+                'field': partition_key,
+                'timestamp': timestamp,
+                'data': data,
+            }
 
-        response_dynamodb = table.put_item(
-            Item=item
-        )
+            response_dynamodb = table.put_item(
+                Item=item
+            )
 
-        logger.info(f'dynamodb response: {response_dynamodb}')
+            logger.info(f'dynamodb response: {response_dynamodb}')
 
         # Publish change via SNS
-        logger.info('Publishing Change via SNS')
-        client_sns = boto3.client('sns', region_name='af-south-1')
-        response_sns = client_sns.publish(
-            TopicArn='arn:aws:sns:af-south-1:273749684738:loadshedding-deltas',
-            Message=pprint.pformat({
-                'data': data,
-                'url': url,
-                'table_name': table_name,
-                'region_loadshedding': region_loadshedding,
-            }, indent=4),
-            Subject='Loadshedding Scraper delta detected'
-        )
+        if sns_notify:
+            logger.info('Publishing Change via SNS')
+            client_sns = boto3.client('sns', region_name='af-south-1')
+            response_sns = client_sns.publish(
+                TopicArn='arn:aws:sns:af-south-1:273749684738:loadshedding-deltas',
+                Message=pprint.pformat({
+                    'data': data,
+                    'url': url,
+                    'table_name': table_name,
+                    'region_loadshedding': region_loadshedding,
+                }, indent=4),
+                Subject='Loadshedding Scraper delta detected'
+            )
 
-        logger.info(f'SNS response: {response_sns}')
+            logger.info(f'SNS response: {response_sns}')
 
         # Some assertions
-        assert response_dynamodb['ResponseMetadata']['HTTPStatusCode'] == 200
-        assert response_sns['ResponseMetadata']['HTTPStatusCode'] == 200
+        if database_write:
+            assert response_dynamodb['ResponseMetadata']['HTTPStatusCode'] == 200
+        if sns_notify:
+            assert response_sns['ResponseMetadata']['HTTPStatusCode'] == 200
     else:
         logger.info('Scraped data is identical to most recent data. Skipping upload')

@@ -25,6 +25,12 @@ def get_parser():
     parser.add_argument('--attempts', type=int, default=5,
         help='Number of times to attempt the HTTP call.'
         )
+    parser.add_argument('--sns_notify', type=bool, default=True,
+        help='If different than recent, send an AWS SNS notification.'
+        )
+    parser.add_argument('--database_write', type=bool, default=True,
+        help='If scraped data differs from most recent data, write changes to database.'
+        )
 
     return parser
 
@@ -40,6 +46,10 @@ if __name__ == '__main__':
     utility.logger.setup_logger_cli(pathlib.PurePath(__file__).stem)
 
     parser = get_parser()
+    parser.set_defaults(
+        sns_notify=False,
+        database_write=False,
+    )
     args = parser.parse_args()
     main(args)
 

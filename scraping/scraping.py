@@ -10,7 +10,11 @@ def soup_me(soup: bs4.BeautifulSoup):
         soup (bs4.BeautifulSoup or markup): input
     """
     if not isinstance(soup, bs4.BeautifulSoup):
-        soup = bs4.BeautifulSoup(soup, 'html.parser')
+        # Use 'lxml' instead of 'html.parser', since the CoCT website,
+        # specifically the section relating to the schedule,
+        # contains invalid </br> tags, which are just supposed to be <br>. It is the only place <br> tags are used.. ATM
+        #  Similar to this issue https://stackoverflow.com/a/44935244
+        soup = bs4.BeautifulSoup(soup, 'lxml')
 
     return soup
 
