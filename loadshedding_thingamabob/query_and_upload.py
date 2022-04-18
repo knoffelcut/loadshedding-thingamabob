@@ -18,17 +18,17 @@ def query_and_upload(
 
     while True:
         try:
-            with urllib.request.urlopen(url) as response_dynamodb:
+            with urllib.request.urlopen(url) as response_url:
                 # TODO Retry like 5 times
-                assert response_dynamodb.status == 200
+                assert response_url.status == 200
 
-                html = response_dynamodb.read()
+                html = response_url.read()
 
                 data = f_scrape(html)
         except (AssertionError, scraping.scraping.ScrapeError) as e:
             # TODO Send email via SNS
             if isinstance(e, AssertionError):
-                logger.error(f'HTML Request Failed\nResponse: {response_dynamodb}')
+                logger.error(f'HTML Request Failed\nResponse: {response_url}')
             elif isinstance(e, scraping.scraping.ScrapeError):
                 logger.error(f'Scraping Response Failed\nException: {str(e)}')
                 logger.error(f'Raw scraped data: {str(html)}')
@@ -55,6 +55,8 @@ def query_and_upload(
     partition_key = f"{region_loadshedding}-{suffix}"
 
     if data_recent is None or data != data_recent:
+        logger.info('Scraped data differs from most recent data')
+
         # Upload the data to dynamodb
         if database_write:
             logger.info('Uploading data to database')
