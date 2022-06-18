@@ -11,8 +11,8 @@ import utility.logger
 
 def get_parser():
     parser = argparse.ArgumentParser(description='Uploads the loadshedding schedule specific section of the CoCT website to DynamoDB')
-    parser.add_argument('--url', type=str, default='https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/load-shedding-and-outages',
-        help='Path to the CoCT website with loadshedding information'
+    parser.add_argument('--url', type=str, default='https://d42sspn7yra3u.cloudfront.net/',
+        help='Path for the CoCT stage information API call'
         )
     parser.add_argument('--table_name', type=str, default='loadshedding',
         help='DynamoDB Table Name.'
@@ -36,12 +36,13 @@ def get_parser():
     return parser
 
 def main(args: argparse.Namespace):
-    return loadshedding_thingamabob.query_and_upload.query_and_upload(
+    data = loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
-        suffix='scraped',
-        f_scrape=scraping.scraping.extract_coct_loadshedding_text,
-        f_datapack=lambda data: '\n'.join(data)
+        suffix='app_json_scraped',
+        f_scrape=lambda x: x,
+        f_datapack=lambda x: x,
         )
+
 
 if __name__ == '__main__':
     utility.logger.setup_logger_cli(pathlib.PurePath(__file__).stem)

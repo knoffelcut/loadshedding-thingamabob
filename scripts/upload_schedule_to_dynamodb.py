@@ -29,7 +29,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Upload a schedule to boto3')
-    parser.add_argument('--path', type=str, default='schedules/coct_20220415.csv',
+    parser.add_argument('--path', type=str, default='schedules/coct_20220418.csv',
         help='Path to ".csv" schedule file.'
         )
     parser.add_argument('--table_name', type=str, default='loadshedding',
