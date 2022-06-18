@@ -1,14 +1,14 @@
-import bs4
-
 class ScrapeError(ValueError):
     pass
 
-def soup_me(soup: bs4.BeautifulSoup):
+def soup_me(soup: 'bs4.BeautifulSoup'):
     """Converts soup to a beautifulsoup4 object
 
     Args:
         soup (bs4.BeautifulSoup or markup): input
     """
+    import bs4
+
     if not isinstance(soup, bs4.BeautifulSoup):
         # Use 'lxml' instead of 'html.parser', since the CoCT website,
         # specifically the section relating to the schedule,
@@ -18,12 +18,14 @@ def soup_me(soup: bs4.BeautifulSoup):
 
     return soup
 
-def extract_coct_loadshedding_text(soup: bs4.BeautifulSoup):
+def extract_coct_loadshedding_text(soup: 'bs4.BeautifulSoup'):
     """Extracts the text relevant to the current loadshedding schedule from the CoCT website
 
     Args:
         soup (bs4.BeautifulSoup or markup): CoCT HTML
     """
+    import bs4
+
     try:
         soup = soup_me(soup)
 
