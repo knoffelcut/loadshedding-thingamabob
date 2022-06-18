@@ -3,14 +3,16 @@ import pathlib
 import argparse
 import datetime
 
-import scraping.scraping
 import loadshedding_thingamabob.query_and_upload
 
 import utility.lambda_helper
 import utility.logger
 
 def get_parser():
-    parser = argparse.ArgumentParser(description='Uploads the loadshedding schedule specific section of the CoCT website to DynamoDB')
+    parser = argparse.ArgumentParser(description=
+        'Uploads the CoCT loadshedding schedule from the public CoCT API.'
+        'Indicates the current stage and the next stage.'
+        )
     parser.add_argument('--url', type=str, default='https://d42sspn7yra3u.cloudfront.net/',
         help='Path for the CoCT stage information API call'
         )
@@ -38,8 +40,7 @@ def get_parser():
 def main(args: argparse.Namespace):
     data = loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
-        suffix='app_json_scraped',
-        f_scrape=lambda x: x,
+        suffix='plaintext',
         f_datapack=lambda x: x,
         )
 

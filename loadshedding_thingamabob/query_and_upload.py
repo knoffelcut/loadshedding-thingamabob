@@ -6,13 +6,11 @@ from typing import Callable
 import boto3
 import urllib.request
 
-import scraping.scraping
-import database.dynamodb
 import loadshedding_thingamabob.query_dynamodb
 
 def query_and_upload(
     url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts: int,
-    f_scrape: Callable, f_datapack: Callable,
+    f_datapack: Callable,
     sns_notify: bool, database_write: bool):
     logger = logging.getLogger()
 
@@ -22,24 +20,20 @@ def query_and_upload(
                 # TODO Retry like 5 times
                 assert response_url.status == 200
 
-                html = response_url.read()
+                data = response_url.read()
 
-                data = f_scrape(html)
-        except (AssertionError, scraping.scraping.ScrapeError) as e:
-            # TODO Send email via SNS
+            break
+        except (AssertionError) as e:
             if isinstance(e, AssertionError):
                 logger.error(f'HTML Request Failed\nResponse: {response_url}')
-            elif isinstance(e, scraping.scraping.ScrapeError):
-                logger.error(f'Scraping Response Failed\nException: {str(e)}')
-                logger.error(f'Raw scraped data: {str(html)}')
 
             if attempts > 0:
                 attempts -= 1
                 continue
             else:
+                # TODO Send email via SNS
                 raise e
 
-        break
     timestamp = int(date.timestamp())
     data = f_datapack(data)
     logger.info(f'Timestamp = {timestamp} ({datetime.datetime.fromtimestamp(timestamp).isoformat()})')

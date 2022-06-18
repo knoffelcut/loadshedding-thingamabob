@@ -7,7 +7,7 @@ import utility.logger
 import loadshedding_thingamabob.query_dynamodb
 
 def get_parser():
-    parser = argparse.ArgumentParser(description='Prints the most recent scraped data')
+    parser = argparse.ArgumentParser(description='Prints the most recent plaintext data')
     parser.add_argument('--table_name', type=str, default='loadshedding',
         help='DynamoDB Table Name.'
         )
@@ -20,7 +20,7 @@ def get_parser():
 def main(args: argparse.Namespace):
     timestamp_recent, data_recent = loadshedding_thingamabob.query_dynamodb.query_recent(
         **vars(args),
-        suffix='scraped',
+        suffix='plaintext',
         )
 
     return timestamp_recent, data_recent

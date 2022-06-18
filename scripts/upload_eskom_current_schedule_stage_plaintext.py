@@ -2,14 +2,16 @@ import pathlib
 import argparse
 import datetime
 
-import scraping.scraping
 import loadshedding_thingamabob.query_and_upload
 
 import utility.lambda_helper
 import utility.logger
 
 def get_parser():
-    parser = argparse.ArgumentParser(description='Uploads the current national loadshedding stage as reported by Eskom')
+    parser = argparse.ArgumentParser(description=
+        'Uploads the national loadshedding schedule from the public Eskom API. '
+        'Only the current stage if available from the API.'
+        )
     parser.add_argument('--url', type=str, default='http://loadshedding.eskom.co.za/LoadShedding/GetStatus',
         help='Eskom API URL to get the current stage'
         )
@@ -37,8 +39,7 @@ def get_parser():
 def main(args: argparse.Namespace):
     return loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
-        suffix='scraped',
-        f_scrape=scraping.scraping.extract_eskom_loadshedding_stage,
+        suffix='plaintext',
         f_datapack=lambda x: x
         )
 

@@ -1,11 +1,8 @@
 import datetime
 import logging
-import pprint
 
 import boto3
-import urllib.request
 
-import scraping.scraping
 import database.dynamodb
 
 def query_recent(table_name: str, region_loadshedding: str, suffix: str, table=None):
