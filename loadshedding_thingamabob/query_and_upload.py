@@ -94,5 +94,9 @@ def query_and_upload(
             assert response_dynamodb['ResponseMetadata']['HTTPStatusCode'] == 200
         if sns_notify:
             assert response_sns['ResponseMetadata']['HTTPStatusCode'] == 200
+
+        return data
     else:
         logger.info('Scraped data is identical to most recent data. Skipping upload')
+
+        return None
