@@ -12,7 +12,6 @@ mkdir "$STAGING_DIR"
 cp -r ./database ./loadshedding_thingamabob ./scraping ./utility "$STAGING_DIR"
 cp -r ${FUNCTION_FILE} "${STAGING_DIR}/lambda_function.py"
 
-
 python3.8 -m pip install --target "$STAGING_DIR" -r ./requirements.txt
 cd "$STAGING_DIR"
 zip -r "../$OUTPUT_ZIP" .

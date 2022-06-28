@@ -12,7 +12,7 @@ def get_parser():
         'Uploads the national loadshedding schedule from the public Eskom API. '
         'Only the current stage if available from the API.'
         )
-    parser.add_argument('--url', type=str, default='http://loadshedding.eskom.co.za/LoadShedding/GetStatus',
+    parser.add_argument('--url', type=str, default='https://loadshedding.eskom.co.za/LoadShedding/GetStatus',
         help='Eskom API URL to get the current stage'
         )
     parser.add_argument('--table_name', type=str, default='loadshedding',
@@ -36,11 +36,18 @@ def get_parser():
 
     return parser
 
+def f_validate(data):
+    try:
+        int(data)
+    except Exception as e:
+        raise loadshedding_thingamabob.query_and_upload.ValidationException from e
+
 def main(args: argparse.Namespace):
     return loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
         suffix='plaintext',
-        f_datapack=lambda x: x
+        f_validate=f_validate,
+        f_datapack=lambda x: x.decode()
         )
 
 if __name__ == '__main__':

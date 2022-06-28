@@ -37,11 +37,18 @@ def get_parser():
 
     return parser
 
+def f_validate(data):
+    try:
+        pass
+    except Exception as e:
+        raise loadshedding_thingamabob.query_and_upload.ValidationException from e
+
 def main(args: argparse.Namespace):
     data = loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
         suffix='plaintext',
-        f_datapack=lambda x: x,
+        f_validate=f_validate,
+        f_datapack=lambda x: x.decode(),
         )
 
 

@@ -8,10 +8,41 @@ import urllib.request
 
 import loadshedding_thingamabob.query_dynamodb
 
+class ValidationException(Exception):
+    pass
+
+def print_response_url(response_url):
+    return f'code: {response_url.status}\nurl: {response_url.url}\msg: {response_url.msg}\reason: {response_url.reason}'
+
 def query_and_upload(
     url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts: int,
-    f_datapack: Callable,
+    f_validate: Callable, f_datapack: Callable,
     sns_notify: bool, database_write: bool):
+    """_summary_
+    TODO Document
+
+    TODO This function is a bit of a monolith as a Lambda function, needs to be split in 3:
+        1. URL Request + DB Request, delta check
+        2. Upload to plaintext
+        3. Parse and upload schedule
+
+    Args:
+        url (str): _description_
+        table_name (str): _description_
+        region_loadshedding (str): _description_
+        suffix (str): _description_
+        date (datetime.datetime): _description_
+        attempts (int): _description_
+        f_datapack (Callable): _description_
+        sns_notify (bool): _description_
+        database_write (bool): _description_
+
+    Raises:
+        e: _description_
+
+    Returns:
+        _type_: _description_
+    """
     logger = logging.getLogger()
 
     while True:
@@ -21,11 +52,16 @@ def query_and_upload(
                 assert response_url.status == 200
 
                 data = response_url.read()
+                f_validate(data)
 
             break
-        except (AssertionError) as e:
+        except (AssertionError, ValidationException) as e:
             if isinstance(e, AssertionError):
-                logger.error(f'HTML Request Failed\nResponse: {response_url}')
+                logger.error(f'HTML Request Failed\nResponse: {print_response_url(response_url)}\nResponse Status: {response_url.status}')
+                logger.exception(e)
+            if isinstance(e, ValidationException):
+                logger.error(f'Validation Failed\nResponse: {print_response_url(response_url)}')
+                logger.exception(e)
 
             if attempts > 0:
                 attempts -= 1
@@ -74,6 +110,7 @@ def query_and_upload(
                 TopicArn='arn:aws:sns:af-south-1:273749684738:loadshedding-deltas',
                 Message=pprint.pformat({
                     'data': data,
+                    'data_recent': data_recent,
                     'url': url,
                     'table_name': table_name,
                     'region_loadshedding': region_loadshedding,
