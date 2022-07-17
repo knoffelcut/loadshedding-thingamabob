@@ -20,7 +20,7 @@ class Schedule(object):
                 (datetime.datetime.fromtimestamp(alpha).isoformat(), datetime.datetime.fromtimestamp(omega).isoformat())
                 for alpha, omega in zip(self.timestamps, self.timestamps[1:])
             ] + \
-            [(datetime.datetime.fromtimestamp(self.timestamps[0]).isoformat(), 'ragnarok')]
+            [(datetime.datetime.fromtimestamp(self.timestamps[-1]).isoformat(), 'ragnarok')]
 
         stages = [0, ] + self.stages
         assert len(time_ranges) == len(stages)
