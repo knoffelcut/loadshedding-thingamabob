@@ -97,6 +97,7 @@ def development_coct():
         print(f'{i:02d} {timestamp} {datetime.datetime.fromtimestamp(timestamp)}')
         print(data)
         print(schedule)
+        print()
 
 # TODO Move to external development script
 def development_national():
@@ -136,4 +137,4 @@ def development_national():
 
 
 if __name__ == '__main__':
-    development_national()
+    development_coct()

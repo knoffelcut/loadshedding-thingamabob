@@ -4,7 +4,7 @@ import argparse
 import datetime
 
 import loadshedding_thingamabob.query_and_upload
-import parsing.parsing
+import loadshedding_thingamabob.parsing
 
 import utility.lambda_helper
 import utility.logger
@@ -57,7 +57,7 @@ def main(args: argparse.Namespace):
             plaintext=data,
             timestamp=timestamp,
             suffix='schedule',
-            f_convert=parsing.parsing.convert_coct_plaintext_to_schedule,
+            f_convert=loadshedding_thingamabob.parsing.convert_coct_plaintext_to_schedule,
             )
 
 
