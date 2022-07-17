@@ -1,5 +1,5 @@
-import pathlib
 import csv
+import itertools
 import bisect
 import typing
 import datetime
@@ -30,9 +30,16 @@ class Schedule(object):
         return string
 
     def set_schedule(self, schedule):
+        schedule = [(int(line[0]), int(line[1])) for line in schedule]
+
+        # Support duplicate entries given they are sequential
+        schedule = [key for key, _ in itertools.groupby(schedule)]
+        assert schedule
+
         self.schedule = schedule
-        self.timestamps = [int(line[0]) for line in self.schedule]
-        self.stages = [int(line[1]) for line in self.schedule]
+
+        self.timestamps = [line[0] for line in self.schedule]
+        self.stages = [line[1] for line in self.schedule]
 
     def check_schedule(self):
         for line in self.schedule:
