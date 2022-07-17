@@ -23,7 +23,7 @@ def get_parser():
 def main(args: argparse.Namespace):
     timestamp_recent, data_recent = loadshedding_thingamabob.query_dynamodb.query_recent(
         **vars(args),
-        suffix='loadshedding-schedule-csv',
+        suffix='schedule',
         )
 
     return timestamp_recent, data_recent
@@ -33,12 +33,14 @@ if __name__ == '__main__':
 
     parser = get_parser()
     args = parser.parse_args()
-    timestamp_recent, data_recent = main(args)
+    timestamp, data = main(args)
 
-    schedule = loadshedding_thingamabob.schedule.Schedule.from_string(data_recent)
+    schedule = loadshedding_thingamabob.schedule.Schedule.from_string(data)
 
-    logger.info(f'Timestamp Recent: {timestamp_recent} ({datetime.datetime.fromtimestamp(timestamp_recent).isoformat()})')
-    logger.info(f'Data Recent:\n{schedule}')
+    logger.info(f'Timestamp Recent: {timestamp} ({datetime.datetime.fromtimestamp(timestamp).isoformat()})')
+    logger.info(f'CSV:\n{data}\n')
+    logger.info('CSV:\n' + '\n'.join([f"{datetime.datetime.fromtimestamp(int(l.split(', ')[0]))}, {l.split(', ')[1]}" for l in data.split('\n')]) + '\n')
+    logger.info(f'Schedule:\n{schedule}\n')
 
 def lambda_handler(event: dict, context):
     utility.logger.setup_logger_lambda()
