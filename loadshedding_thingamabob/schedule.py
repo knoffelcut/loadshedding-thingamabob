@@ -62,6 +62,10 @@ class Schedule(object):
 
         return Schedule(schedule)
 
+    def to_csv(self):
+        assert len(self.timestamps) == len(self.stages)
+        return '\n'.join([f'{t}, {s}' for t, s in zip(self.timestamps, self.stages)])
+
     @staticmethod
     def from_string(data: str):
         schedule = [row for row in csv.reader(data.split('\n'), delimiter=',') if row]
