@@ -1,3 +1,5 @@
+import os
+import time
 import datetime
 import json
 
@@ -46,13 +48,24 @@ def convert_coct_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     # last_updated is not used right now, but it can be used when last_updated < start_time
     #   In that case we actually need to get the previous schedule and get the current stage
     #   for the epoch:start_start stage
-    assert data['lastUpdated'][-1].lower() == 'z'
-    last_updated = datetime.datetime.fromisoformat(data['lastUpdated'][:-1])
+    # assert data['lastUpdated'][-1].lower() == 'z'
+    # last_updated = datetime.datetime.fromisoformat(data['lastUpdated'][:-1])
 
-    start_time = datetime.datetime.fromisoformat(data['startTime']).timestamp()
     current_stage = int(data['currentStage'])
-    next_stage_start_time = datetime.datetime.fromisoformat(data['nextStageStartTime']).timestamp()
     next_stage = int(data['nextStage'])
+
+    system_tz = os.environ['TZ'] if 'TZ' in os.environ else None
+    os.environ['TZ'] = 'Africa/Johannesburg'
+    time.tzset()
+    try:
+        start_time = datetime.datetime.fromisoformat(data['startTime']).timestamp()
+        next_stage_start_time = datetime.datetime.fromisoformat(data['nextStageStartTime']).timestamp()
+    finally:
+        if system_tz:
+            os.environ['TZ'] = system_tz
+        else:
+            del os.environ['TZ']
+        time.tzset()
 
     if next_stage_start_time < start_time:
         # This is a valid response from the CoCT API
@@ -61,10 +74,10 @@ def convert_coct_plaintext_to_schedule(timestamp_db: int, plaintext: str):
             (start_time, current_stage),
         ]
     else:
-    schedule = [
-        (start_time, current_stage),
-        (next_stage_start_time, next_stage),
-    ]
+        schedule = [
+            (start_time, current_stage),
+            (next_stage_start_time, next_stage),
+        ]
 
     schedule = loadshedding_thingamabob.schedule.Schedule(schedule)
 
