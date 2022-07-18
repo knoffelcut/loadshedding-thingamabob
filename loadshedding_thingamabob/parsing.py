@@ -54,10 +54,18 @@ def convert_coct_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     next_stage_start_time = datetime.datetime.fromisoformat(data['nextStageStartTime']).timestamp()
     next_stage = int(data['nextStage'])
 
+    if next_stage_start_time < start_time:
+        # This is a valid response from the CoCT API
+        # TODO log.warning or similar upon condition
+        schedule = [
+            (start_time, current_stage),
+        ]
+    else:
     schedule = [
         (start_time, current_stage),
         (next_stage_start_time, next_stage),
     ]
+
     schedule = loadshedding_thingamabob.schedule.Schedule(schedule)
 
     return schedule
