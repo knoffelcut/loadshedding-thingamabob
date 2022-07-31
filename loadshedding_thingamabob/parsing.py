@@ -20,6 +20,7 @@ def extract_national_loadshedding_stage(response_text: str):
     try:
         stage = int(response_text)
         stage = stage - 1
+        stage = max(0, stage)
         return stage
     except Exception as e:
         raise ParseError from e
@@ -143,19 +144,23 @@ def development_national():
         partition_key = f"{region_loadshedding}-{suffix}"
         items = database.dynamodb.get_recent_scraped_data(table, partition_key, 128, False)
 
-        with open('cache_coct_plaintext.pkl', 'wb') as f:
+        with open('cache_national_plaintext.pkl', 'wb') as f:
             pickle.dump(items, f, pickle.HIGHEST_PROTOCOL)
 
     for i, item in enumerate(items[::-1]):
         timestamp = int(item['timestamp'])
         data = item['data']
 
-        schedule = convert_national_plaintext_to_schedule(timestamp, data)
 
         print(f'{i:02d} {timestamp} {datetime.datetime.fromtimestamp(timestamp)}')
-        print(data)
-        print(schedule)
+        print(f'data: {data}')
+        try:
+            schedule = convert_national_plaintext_to_schedule(timestamp, data)
+            print(schedule)
+        except Exception as e:
+            print(e)
+        print()
 
 
 if __name__ == '__main__':
-    development_coct()
+    development_national()
