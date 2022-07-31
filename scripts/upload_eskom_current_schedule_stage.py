@@ -3,6 +3,7 @@ import argparse
 import datetime
 
 import loadshedding_thingamabob.query_and_upload
+import loadshedding_thingamabob.parsing
 
 import utility.lambda_helper
 import utility.logger
@@ -44,12 +45,22 @@ def f_validate(data):
         raise loadshedding_thingamabob.query_and_upload.ValidationException from e
 
 def main(args: argparse.Namespace):
-    return loadshedding_thingamabob.query_and_upload.query_and_upload(
+    timestamp, data, changed = loadshedding_thingamabob.query_and_upload.query_and_upload(
         **vars(args),
         suffix='plaintext',
         f_validate=f_validate,
-        f_datapack=lambda x: x.decode()
+        f_datapack=lambda x: x.decode(),
         )
+    if changed:
+        response = loadshedding_thingamabob.query_and_upload.convert_plaintext_and_upload(
+            **vars(args),
+            plaintext=data,
+            timestamp=timestamp,
+            suffix='schedule',
+            f_convert=loadshedding_thingamabob.parsing.convert_national_plaintext_to_schedule,
+            )
+
+
 
 if __name__ == '__main__':
     utility.logger.setup_logger_cli(pathlib.PurePath(__file__).stem)
