@@ -50,11 +50,11 @@ def query_and_upload(
     while True:
         try:
             with urllib.request.urlopen(url) as response_url:
-                # TODO Retry like 5 times
                 assert response_url.status == 200
 
                 data = response_url.read()
-                f_validate(data)
+
+            f_validate(data)
 
             break
         except (AssertionError, ValidationException) as e:
@@ -65,11 +65,10 @@ def query_and_upload(
                 logger.error(f'Validation Failed\nResponse: {print_response_url(response_url)}')
                 logger.exception(e)
 
-            if attempts > 0:
-                attempts -= 1
-                continue
-            else:
-                # TODO Send email via SNS
+            attempts -= 1
+            logger.error(f'Attempts left: {attempts}')
+
+            if attempts <= 0:
                 raise e
 
     timestamp = int(date.timestamp())
