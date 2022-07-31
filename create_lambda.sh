@@ -3,8 +3,8 @@
 
 set -e
 
-FUNCTION_FILE=${1:-"scripts/upload_eskom_current_stage.py"}
-LAMBDA_NAME=${2:-"upload_eskom_current_stage"}
+FUNCTION_FILE=${1:-"scripts/upload_national_current_schedule_stage.py"}
+LAMBDA_NAME=${2:-"upload_national_current_schedule_stage"}
 
 OUTPUT_ZIP=${LAMBDA_NAME}-deployment-package.zip
 STAGING_DIR=./${LAMBDA_NAME}-aws-deploy

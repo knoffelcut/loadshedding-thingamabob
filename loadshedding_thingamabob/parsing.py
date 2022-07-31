@@ -9,10 +9,10 @@ class ParseError(ValueError):
     pass
 
 def extract_national_loadshedding_stage(response_text: str):
-    """Extracts the current Eskom loadshedding stage
+    """Extracts the current National loadshedding stage
 
     Args:
-        response_text (str): Eskom API response
+        response_text (str): National API response
 
     Returns:
         int: Current national loadshedding stage

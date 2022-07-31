@@ -10,7 +10,7 @@ import utility.logger
 
 def get_parser():
     parser = argparse.ArgumentParser(description=
-        'Uploads the national loadshedding schedule from the public Eskom API. '
+        'Uploads the national loadshedding schedule from the public National API. '
         'Only the current stage if available from the API.'
         )
     parser.add_argument('--url', type=str, default='https://loadshedding.eskom.co.za/LoadShedding/GetStatus',
