@@ -5,8 +5,10 @@ import json
 
 import loadshedding_thingamabob.schedule
 
+
 class ParseError(ValueError):
     pass
+
 
 def extract_national_loadshedding_stage(response_text: str):
     """Extracts the current National loadshedding stage
@@ -25,6 +27,7 @@ def extract_national_loadshedding_stage(response_text: str):
     except Exception as e:
         raise ParseError from e
 
+
 def convert_national_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     if isinstance(plaintext, str):
         plaintext = extract_national_loadshedding_stage(plaintext)
@@ -36,6 +39,7 @@ def convert_national_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     schedule = loadshedding_thingamabob.schedule.Schedule(schedule)
 
     return schedule
+
 
 def convert_coct_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     assert isinstance(plaintext, str)
@@ -59,8 +63,10 @@ def convert_coct_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     os.environ['TZ'] = 'Africa/Johannesburg'
     time.tzset()
     try:
-        start_time = datetime.datetime.fromisoformat(data['startTime']).timestamp()
-        next_stage_start_time = datetime.datetime.fromisoformat(data['nextStageStartTime']).timestamp()
+        start_time = datetime.datetime.fromisoformat(
+            data['startTime']).timestamp()
+        next_stage_start_time = datetime.datetime.fromisoformat(
+            data['nextStageStartTime']).timestamp()
     finally:
         if system_tz:
             os.environ['TZ'] = system_tz
@@ -85,6 +91,8 @@ def convert_coct_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     return schedule
 
 # TODO Move to external development script
+
+
 def development_coct():
     import pickle
     import datetime
@@ -92,7 +100,7 @@ def development_coct():
     try:
         # raise FileNotFoundError
         with open('cache_coct_plaintext.pkl', 'rb') as f:
-            items  = pickle.load(f)
+            items = pickle.load(f)
     except FileNotFoundError as e:
         import boto3
         import database.dynamodb
@@ -105,7 +113,8 @@ def development_coct():
         table = dynamodb.Table(table_name)
 
         partition_key = f"{region_loadshedding}-{suffix}"
-        items = database.dynamodb.get_recent_scraped_data(table, partition_key, 128, False)
+        items = database.dynamodb.get_recent_scraped_data(
+            table, partition_key, 128, False)
 
         with open('cache_coct_plaintext.pkl', 'wb') as f:
             pickle.dump(items, f, pickle.HIGHEST_PROTOCOL)
@@ -122,6 +131,8 @@ def development_coct():
         print()
 
 # TODO Move to external development script
+
+
 def development_national():
     import pickle
     import datetime
@@ -129,7 +140,7 @@ def development_national():
     try:
         # raise FileNotFoundError
         with open('cache_national_plaintext.pkl', 'rb') as f:
-            items  = pickle.load(f)
+            items = pickle.load(f)
     except FileNotFoundError as e:
         import boto3
         import database.dynamodb
@@ -142,7 +153,8 @@ def development_national():
         table = dynamodb.Table(table_name)
 
         partition_key = f"{region_loadshedding}-{suffix}"
-        items = database.dynamodb.get_recent_scraped_data(table, partition_key, 128, False)
+        items = database.dynamodb.get_recent_scraped_data(
+            table, partition_key, 128, False)
 
         with open('cache_national_plaintext.pkl', 'wb') as f:
             pickle.dump(items, f, pickle.HIGHEST_PROTOCOL)
@@ -150,7 +162,6 @@ def development_national():
     for i, item in enumerate(items[::-1]):
         timestamp = int(item['timestamp'])
         data = item['data']
-
 
         print(f'{i:02d} {timestamp} {datetime.datetime.fromtimestamp(timestamp)}')
         print(f'data: {data}')

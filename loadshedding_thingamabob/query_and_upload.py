@@ -8,16 +8,19 @@ import urllib.request
 
 import loadshedding_thingamabob.query_dynamodb
 
+
 class ValidationException(Exception):
     pass
+
 
 def print_response_url(response_url):
     return f'code: {response_url.status}\nurl: {response_url.url}\msg: {response_url.msg}\reason: {response_url.reason}'
 
+
 def query_and_upload(
-    url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts: int,
-    f_validate: Callable, f_datapack: Callable,
-    sns_notify: bool, database_write: bool):
+        url: str, table_name: str, region_loadshedding: str, suffix: str, date: datetime.datetime, attempts: int,
+        f_validate: Callable, f_datapack: Callable,
+        sns_notify: bool, database_write: bool):
     """_summary_
     TODO Document
 
@@ -59,10 +62,12 @@ def query_and_upload(
             break
         except (AssertionError, ValidationException) as e:
             if isinstance(e, AssertionError):
-                logger.error(f'HTML Request Failed\nResponse: {print_response_url(response_url)}\nResponse Status: {response_url.status}')
+                logger.error(
+                    f'HTML Request Failed\nResponse: {print_response_url(response_url)}\nResponse Status: {response_url.status}')
                 logger.exception(e)
             if isinstance(e, ValidationException):
-                logger.error(f'Validation Failed\nResponse: {print_response_url(response_url)}')
+                logger.error(
+                    f'Validation Failed\nResponse: {print_response_url(response_url)}')
                 logger.exception(e)
 
             attempts -= 1
@@ -73,7 +78,8 @@ def query_and_upload(
 
     timestamp = int(date.timestamp())
     data = f_datapack(data)
-    logger.info(f'Timestamp = {timestamp} ({datetime.datetime.fromtimestamp(timestamp).isoformat()})')
+    logger.info(
+        f'Timestamp = {timestamp} ({datetime.datetime.fromtimestamp(timestamp).isoformat()})')
     logger.info(f'Data =      {data}')
 
     dynamodb = boto3.resource('dynamodb', region_name='af-south-1')
@@ -81,7 +87,7 @@ def query_and_upload(
 
     timestamp_recent, data_recent = loadshedding_thingamabob.query_dynamodb.query_recent(
         None, region_loadshedding, suffix, table
-        )
+    )
 
     partition_key = f"{region_loadshedding}-{suffix}"
 
@@ -129,9 +135,11 @@ def query_and_upload(
 
         return timestamp, data, True
     else:
-        logger.info('Scraped data is identical to most recent data. Skipping upload')
+        logger.info(
+            'Scraped data is identical to most recent data. Skipping upload')
 
         return timestamp, data, False
+
 
 def convert_plaintext_and_upload(
     timestamp: int, plaintext: str,
@@ -139,7 +147,7 @@ def convert_plaintext_and_upload(
     f_convert: Callable,
     sns_notify: bool, database_write: bool,
     **kwargs,
-    ):
+):
     """_summary_
     TODO Document
 

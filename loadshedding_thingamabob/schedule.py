@@ -4,6 +4,7 @@ import bisect
 import typing
 import datetime
 
+
 class Schedule(object):
     def __init__(self, schedule: typing.Iterable):
         self.schedule = []
@@ -17,15 +18,18 @@ class Schedule(object):
         time_ranges = \
             [('epoch', datetime.datetime.fromtimestamp(self.timestamps[0]).isoformat())] + \
             [
-                (datetime.datetime.fromtimestamp(alpha).isoformat(), datetime.datetime.fromtimestamp(omega).isoformat())
+                (datetime.datetime.fromtimestamp(alpha).isoformat(),
+                 datetime.datetime.fromtimestamp(omega).isoformat())
                 for alpha, omega in zip(self.timestamps, self.timestamps[1:])
             ] + \
-            [(datetime.datetime.fromtimestamp(self.timestamps[-1]).isoformat(), 'ragnarok')]
+            [(datetime.datetime.fromtimestamp(
+                self.timestamps[-1]).isoformat(), 'ragnarok')]
 
         stages = [0, ] + self.stages
         assert len(time_ranges) == len(stages)
 
-        string = '\n'.join(f'[{alpha:24} - {omega:24}): {stage:2}' for (alpha, omega), stage in zip(time_ranges, stages))
+        string = '\n'.join(f'[{alpha:24} - {omega:24}): {stage:2}' for (
+            alpha, omega), stage in zip(time_ranges, stages))
 
         return string
 
@@ -45,7 +49,8 @@ class Schedule(object):
         for line in self.schedule:
             assert len(line) == 2, line
 
-        assert len(self.timestamps) == len(set(self.timestamps)), "Duplicate timestamps in schedule"
+        assert len(self.timestamps) == len(
+            set(self.timestamps)), "Duplicate timestamps in schedule"
         for ts0, ts1 in zip(self.timestamps, sorted(self.timestamps)):
             assert ts0 == ts1, "Timestamps in schedule not in sorted order"
 
@@ -68,7 +73,8 @@ class Schedule(object):
 
     @staticmethod
     def from_string(data: str):
-        schedule = [row for row in csv.reader(data.split('\n'), delimiter=',') if row]
+        schedule = [row for row in csv.reader(
+            data.split('\n'), delimiter=',') if row]
 
         return Schedule(schedule)
 
@@ -76,7 +82,8 @@ class Schedule(object):
         try:
             int(timestamp)
         except ValueError as _:
-            timestamp = int(datetime.datetime.fromisoformat(timestamp).timestamp())
+            timestamp = int(datetime.datetime.fromisoformat(
+                timestamp).timestamp())
 
         i = bisect.bisect_right(self.timestamps, timestamp)
         i = i - 1  # Such that -1 = not in list, otherwise correspond to stage index
@@ -85,6 +92,7 @@ class Schedule(object):
             return 0
 
         return self.stages[i]
+
 
 if __name__ == '__main__':
     schedule = Schedule.from_file('schedules/test0.csv')

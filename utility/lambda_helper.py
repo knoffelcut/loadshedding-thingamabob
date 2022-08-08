@@ -1,5 +1,6 @@
 import argparse
 
+
 def parse_events_as_args(parser: argparse.ArgumentParser, event: dict):
     # Other event['region'] may be interpreted as 'region_loadshedding'
     parser.allow_abbrev = False
