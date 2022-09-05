@@ -41,7 +41,7 @@ def get_parser():
 def f_validate(data):
     try:
         stage = int(data) - 1
-        assert 0 <= stage <= 8
+        assert 0 <= stage <= 8, f'stage: {stage}'
     except Exception as e:
         raise loadshedding_thingamabob.query_and_upload.ValidationException from e
 
