@@ -5,6 +5,7 @@ from typing import Callable
 
 import boto3
 import urllib.request
+import urllib.error
 
 import loadshedding_thingamabob.query_dynamodb
 
@@ -60,15 +61,22 @@ def query_and_upload(
             f_validate(data)
 
             break
-        except (AssertionError, ValidationException) as e:
+        except (AssertionError, ValidationException, urllib.error.HTTPError, urllib.error.ContentTooShortError) as e:
             if isinstance(e, AssertionError):
                 logger.error(
-                    f'HTML Request Failed\nResponse: {print_response_url(response_url)}\nResponse Status: {response_url.status}')
-                logger.exception(e)
-            if isinstance(e, ValidationException):
+                    f'HTML Request Failed'
+                    '\nResponse: {print_response_url(response_url)}\nResponse Status: {response_url.status}'
+                )
+            elif isinstance(e, (urllib.error.HTTPError, urllib.error.ContentTooShortError)):
+                logger.error(
+                    f'URL Lib Error')
+            elif isinstance(e, ValidationException):
                 logger.error(
                     f'Validation Failed\nResponse: {print_response_url(response_url)}')
-                logger.exception(e)
+            else:
+                logger.error(f'Exception')
+
+            logger.exception(e)
 
             attempts -= 1
             logger.error(f'Attempts left: {attempts}')
