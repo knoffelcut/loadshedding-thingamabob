@@ -25,7 +25,7 @@ def get_parser():
     parser.add_argument('--date', type=datetime.datetime.fromisoformat, default=datetime.datetime.now().isoformat(),
                         help='Datetime used as the sort key.'
                         )
-    parser.add_argument('--attempts', type=int, default=5,
+    parser.add_argument('--attempts', type=int, default=16,
                         help='Number of times to attempt the HTTP call.'
                         )
     parser.add_argument('--sns_notify', type=bool, default=False,
