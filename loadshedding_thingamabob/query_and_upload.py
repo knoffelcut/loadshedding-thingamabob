@@ -61,7 +61,11 @@ def query_and_upload(
             f_validate(data)
 
             break
-        except (AssertionError, ValidationException, urllib.error.HTTPError, urllib.error.ContentTooShortError) as e:
+        except (
+            AssertionError, ValueError,
+            urllib.error.HTTPError, urllib.error.ContentTooShortError,
+            ValidationException
+        ) as e:
             if isinstance(e, AssertionError):
                 logger.error(
                     f'HTML Request Failed'
@@ -74,6 +78,7 @@ def query_and_upload(
                 logger.error(
                     f'Validation Failed\nResponse: {print_response_url(response_url)}')
             else:
+                # ValueError (e.g. National API returns error message that cannot be converted to an int)
                 logger.error(f'Exception')
 
             logger.exception(e)
