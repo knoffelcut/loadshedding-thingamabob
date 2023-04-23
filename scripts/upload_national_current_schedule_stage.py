@@ -25,7 +25,7 @@ def get_parser():
                         )
     parser.add_argument('--date',
                         type=datetime.datetime.fromisoformat,
-                        default=datetime.datetime.now(tz=zoneinfo.ZoneInfo(key='localtime')).isoformat(),
+                        default=datetime.datetime.now(tz=zoneinfo.ZoneInfo(key='UTC')).isoformat(),
                         help='Datetime used as the sort key.'
                         )
     parser.add_argument('--attempts', type=int, default=16,
