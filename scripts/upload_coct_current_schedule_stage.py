@@ -1,6 +1,7 @@
 import pathlib
 import argparse
 import datetime
+import zoneinfo
 
 import loadshedding_thingamabob.query_and_upload
 import loadshedding_thingamabob.parsing
@@ -22,7 +23,9 @@ def get_parser():
     parser.add_argument('--region_loadshedding', type=str, default='coct',
                         help='Loadshedding Stage Schedule region.'
                         )
-    parser.add_argument('--date', type=datetime.datetime.fromisoformat, default=datetime.datetime.now().isoformat(),
+    parser.add_argument('--date',
+                        type=datetime.datetime.fromisoformat,
+                        default=datetime.datetime.now(tz=zoneinfo.ZoneInfo(key='localtime')).isoformat(),
                         help='Datetime used as the sort key.'
                         )
     parser.add_argument('--attempts', type=int, default=5,

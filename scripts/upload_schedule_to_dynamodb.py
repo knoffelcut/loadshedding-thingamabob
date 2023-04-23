@@ -1,4 +1,5 @@
 import datetime
+import zoneinfo
 import pprint
 
 import boto3
@@ -40,7 +41,9 @@ if __name__ == '__main__':
     parser.add_argument('--region_loadshedding', type=str, default='coct',
                         help='Schedule region.'
                         )
-    parser.add_argument('--date', type=datetime.datetime.fromisoformat, default=datetime.datetime.now().isoformat(),
+    parser.add_argument('--date',
+                        type=datetime.datetime.fromisoformat,
+                        default=datetime.datetime.now(tz=zoneinfo.ZoneInfo(key='localtime')).isoformat(),
                         help='Datetime used as the primary key.'
                         )
     args = parser.parse_args()

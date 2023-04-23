@@ -1,4 +1,5 @@
 # Visual Studio Code
+.env
 .vscode/*
 
 # Distribution / packaging

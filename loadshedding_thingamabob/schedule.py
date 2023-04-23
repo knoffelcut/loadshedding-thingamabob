@@ -3,38 +3,44 @@ import itertools
 import bisect
 import typing
 import datetime
+import zoneinfo
 
 
 class Schedule(object):
-    def __init__(self, schedule: typing.Iterable):
+    def __init__(self, schedule: typing.Iterable, timezone: str):
         self.schedule = []
-        self.timestamps = []
+        self.datetimes = []
         self.stages = []
-        self.set_schedule(schedule)
+        self.set_schedule(schedule, timezone)
 
         self.check_schedule()
 
     def __str__(self):
         time_ranges = \
-            [('epoch', datetime.datetime.fromtimestamp(self.timestamps[0]).isoformat())] + \
+            [('epoch', self.datetimes[0].isoformat())] + \
             [
-                (datetime.datetime.fromtimestamp(alpha).isoformat(),
-                 datetime.datetime.fromtimestamp(omega).isoformat())
-                for alpha, omega in zip(self.timestamps, self.timestamps[1:])
+                (alpha.isoformat(),
+                 omega.isoformat())
+                for alpha, omega in zip(self.datetimes, self.datetimes[1:])
             ] + \
-            [(datetime.datetime.fromtimestamp(
-                self.timestamps[-1]).isoformat(), 'ragnarok')]
+            [(self.datetimes[-1].isoformat(), 'ragnarok')]
 
         stages = [0, ] + self.stages
         assert len(time_ranges) == len(stages)
 
-        string = '\n'.join(f'[{alpha:24} - {omega:24}): {stage:2}' for (
+        string = '\n'.join(f'[{alpha:32} - {omega:32}): {stage:2}' for (
             alpha, omega), stage in zip(time_ranges, stages))
 
         return string
 
-    def set_schedule(self, schedule):
-        schedule = [(int(line[0]), int(line[1])) for line in schedule]
+    def set_schedule(self, schedule, timezone):
+        schedule = [
+            (
+                datetime.datetime.fromtimestamp(int(line[0])).replace(tzinfo=zoneinfo.ZoneInfo(timezone)),
+                int(line[1])
+            )
+            for line in schedule
+        ]
 
         # Support duplicate entries given they are sequential
         schedule = [key for key, _ in itertools.groupby(schedule)]
@@ -42,17 +48,16 @@ class Schedule(object):
 
         self.schedule = schedule
 
-        self.timestamps = [line[0] for line in self.schedule]
+        self.datetimes = [line[0] for line in self.schedule]
         self.stages = [line[1] for line in self.schedule]
 
     def check_schedule(self):
         for line in self.schedule:
             assert len(line) == 2, line
 
-        assert len(self.timestamps) == len(
-            set(self.timestamps)), "Duplicate timestamps in schedule"
-        for ts0, ts1 in zip(self.timestamps, sorted(self.timestamps)):
-            assert ts0 == ts1, "Timestamps in schedule not in sorted order"
+        assert len(self.datetimes) == len(set(self.datetimes)), "Duplicate datetimes in schedule"
+        for ts0, ts1 in zip(self.datetimes, sorted(self.datetimes)):
+            assert ts0 == ts1, "Datetimes in schedule not in sorted order"
 
         for stage in self.stages:
             assert 0 <= stage <= 8
@@ -68,24 +73,22 @@ class Schedule(object):
         return Schedule(schedule)
 
     def to_csv(self):
-        assert len(self.timestamps) == len(self.stages)
-        return '\n'.join([f'{t}, {s}' for t, s in zip(self.timestamps, self.stages)])
+        assert len(self.datetimes) == len(self.stages)
+        return '\n'.join([f'{t.timestamp()}, {s}' for t, s in zip(self.datetimes, self.stages)])
 
-    @staticmethod
-    def from_string(data: str):
+    @classmethod
+    def from_string(cls, data: str, timezone):
         schedule = [row for row in csv.reader(
             data.split('\n'), delimiter=',') if row]
 
-        return Schedule(schedule)
+        return cls(schedule, timezone)
 
-    def stage(self, timestamp: int):
-        try:
-            int(timestamp)
-        except ValueError as _:
-            timestamp = int(datetime.datetime.fromisoformat(
-                timestamp).timestamp())
+    def stage(self, datetime_query: datetime.datetime):
+        assert isinstance(datetime_query, datetime.datetime)
+        assert datetime_query.tzinfo is not None
+        assert datetime_query.tzinfo.utcoffset(datetime_query) is not None
 
-        i = bisect.bisect_right(self.timestamps, timestamp)
+        i = bisect.bisect_right(self.datetimes, datetime_query)
         i = i - 1  # Such that -1 = not in list, otherwise correspond to stage index
 
         if i < 0:

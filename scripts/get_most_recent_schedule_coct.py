@@ -1,7 +1,6 @@
 import pathlib
 import argparse
 import datetime
-import pprint
 import json
 
 import utility.lambda_helper
@@ -16,20 +15,26 @@ def get_parser():
     parser.add_argument('--table_name', type=str, default='loadshedding',
                         help='DynamoDB Table Name.'
                         )
-    parser.add_argument('--region_loadshedding', type=str, default='national',  # National
+    parser.add_argument('--region_loadshedding', type=str, default='coct',
                         help='Loadshedding Stage Schedule region.'
+                        )
+    parser.add_argument('--timezone', type=str, default='Africa/Johannesburg',
+                        help='Timezone corresponding to region_loadshedding.'
                         )
 
     return parser
 
 
 def main(args: argparse.Namespace):
+    # table_name: str, region_loadshedding: str, suffix: str, table
     timestamp_recent, data_recent = loadshedding_thingamabob.query_dynamodb.query_recent(
-        **vars(args),
+        table_name=args.table_name,
+        region_loadshedding=args.region_loadshedding,
         suffix='schedule',
     )
+    timezone = args.timezone
 
-    return timestamp_recent, data_recent
+    return timestamp_recent, timezone, data_recent
 
 
 if __name__ == '__main__':
@@ -37,12 +42,13 @@ if __name__ == '__main__':
 
     parser = get_parser()
     args = parser.parse_args()
-    timestamp, data = main(args)
+    timestamp, timezone, data = main(args)
 
     schedule = loadshedding_thingamabob.schedule.Schedule.from_string(data)
 
     logger.info(
         f'Timestamp Recent: {timestamp} ({datetime.datetime.fromtimestamp(timestamp).isoformat()})')
+    logger.info(f'Timezone: {timezone}')
     logger.info(f'CSV:\n{data}\n')
     logger.info('CSV:\n' + '\n'.join(
         [f"{datetime.datetime.fromtimestamp(int(l.split(', ')[0]))}, {l.split(', ')[1]}" for l in data.split('\n')]) + '\n')
@@ -60,6 +66,7 @@ def lambda_handler(event: dict, context):
         "statusCode": 200,
         "body": json.dumps({
             'timestamp': timestamp_recent,
-            'schedule_csv': data_recent
+            'schedule_csv': data_recent,
+            'timezone': timezone
         }),
     }
