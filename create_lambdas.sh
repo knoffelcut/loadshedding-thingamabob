@@ -1,0 +1,4 @@
+#!/bin/bash
+./create_lambda.sh scripts/upload_national_current_schedule_stage.py upload_national_current_schedule_stage
+./create_lambda.sh scripts/upload_coct_current_schedule_stage.py upload_coct_current_schedule_stage
+./create_lambda.sh scripts/get_most_recent_schedule_coct.py get_most_recent_schedule_coct
