@@ -44,7 +44,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     timestamp, timezone, data = main(args)
 
-    schedule = loadshedding_thingamabob.schedule.Schedule.from_string(data)
+    schedule = loadshedding_thingamabob.schedule.Schedule.from_string(data, timezone)
 
     logger.info(
         f'Timestamp Recent: {timestamp} ({datetime.datetime.fromtimestamp(timestamp).isoformat()})')

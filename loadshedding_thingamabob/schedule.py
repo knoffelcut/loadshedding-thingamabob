@@ -36,7 +36,7 @@ class Schedule(object):
     def set_schedule(self, schedule, timezone):
         schedule = [
             (
-                datetime.datetime.fromtimestamp(int(line[0])).replace(tzinfo=zoneinfo.ZoneInfo(timezone)),
+                datetime.datetime.fromtimestamp(int(line[0]), tz=zoneinfo.ZoneInfo(timezone)),
                 int(line[1])
             )
             for line in schedule

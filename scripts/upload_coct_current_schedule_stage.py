@@ -66,6 +66,12 @@ def main(args: argparse.Namespace):
 
 
 if __name__ == '__main__':
+    # Simulate the timezone used by AWS Lambda
+    import os
+    import time
+    os.environ['TZ'] = 'UTC'
+    time.tzset()
+
     utility.logger.setup_logger_cli(pathlib.PurePath(__file__).stem)
 
     parser = get_parser()
