@@ -74,7 +74,7 @@ class Schedule(object):
 
     def to_csv(self):
         assert len(self.datetimes) == len(self.stages)
-        return '\n'.join([f'{t.timestamp()}, {s}' for t, s in zip(self.datetimes, self.stages)])
+        return '\n'.join([f'{dt.timestamp():.0f}, {s:d}' for dt, s in zip(self.datetimes, self.stages)])
 
     @classmethod
     def from_string(cls, data: str, timezone):

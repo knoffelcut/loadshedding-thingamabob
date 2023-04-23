@@ -60,7 +60,7 @@ def lambda_handler(event: dict, context):
 
     parser = get_parser()
     args = utility.lambda_helper.parse_events_as_args(parser, event)
-    timestamp_recent, data_recent = main(args)
+    timestamp_recent, timezone, data_recent = main(args)
 
     return {
         "statusCode": 200,

@@ -36,7 +36,7 @@ def convert_national_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     schedule = [
         (timestamp_db, plaintext),
     ]
-    schedule = loadshedding_thingamabob.schedule.Schedule(schedule)
+    schedule = loadshedding_thingamabob.schedule.Schedule(schedule, 'Africa/Johannesburg')
 
     return schedule
 
@@ -86,7 +86,7 @@ def convert_coct_plaintext_to_schedule(timestamp_db: int, plaintext: str):
             (next_stage_start_time, next_stage),
         ]
 
-    schedule = loadshedding_thingamabob.schedule.Schedule(schedule)
+    schedule = loadshedding_thingamabob.schedule.Schedule(schedule, 'Africa/Johannesburg')
 
     return schedule
 
