@@ -64,9 +64,9 @@ def convert_coct_plaintext_to_schedule(timestamp_db: int, plaintext: str):
     time.tzset()
     try:
         start_time = datetime.datetime.fromisoformat(
-            data['startTime']).timestamp()
+            data['startTime'].replace(';', ':').replace('_', '-')).timestamp()
         next_stage_start_time = datetime.datetime.fromisoformat(
-            data['nextStageStartTime']).timestamp()
+            data['nextStageStartTime'].replace(';', ':').replace('_', '-')).timestamp()
     finally:
         if system_tz:
             os.environ['TZ'] = system_tz
