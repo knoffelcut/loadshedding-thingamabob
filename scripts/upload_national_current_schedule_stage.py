@@ -1,11 +1,10 @@
-import pathlib
 import argparse
 import datetime
+import pathlib
 import zoneinfo
 
-import loadshedding_thingamabob.query_and_upload
 import loadshedding_thingamabob.parsing
-
+import loadshedding_thingamabob.query_and_upload
 import utility.lambda_helper
 import utility.logger
 
@@ -54,7 +53,7 @@ def main(args: argparse.Namespace):
         **vars(args),
         suffix='plaintext',
         f_validate=f_validate,
-        f_datapack=lambda x: x.decode(),
+        f_datapack=lambda x: x,
     )
     if changed:
         response = loadshedding_thingamabob.query_and_upload.convert_plaintext_and_upload(

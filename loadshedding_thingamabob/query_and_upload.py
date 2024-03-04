@@ -4,8 +4,7 @@ import pprint
 from typing import Callable
 
 import boto3
-import urllib.request
-import urllib.error
+import requests
 
 import loadshedding_thingamabob.query_dynamodb
 
@@ -14,8 +13,8 @@ class ValidationException(Exception):
     pass
 
 
-def print_response_url(response_url):
-    return f'code: {response_url.status}\nurl: {response_url.url}\msg: {response_url.msg}\reason: {response_url.reason}'
+def format_response(response):
+    return f'status_code: {response.status_code}\nurl: {response.url}\ntext: {response.text}\nreason: {response.reason}'
 
 
 def query_and_upload(
@@ -53,30 +52,24 @@ def query_and_upload(
 
     while True:
         try:
-            with urllib.request.urlopen(url) as response_url:
-                assert response_url.status == 200
-
-                data = response_url.read()
-
+            response = requests.get(url)
+            assert response.status_code == 200
+            data = response.text
             f_validate(data)
 
             break
         except (
             AssertionError, ValueError,
-            urllib.error.HTTPError, urllib.error.ContentTooShortError,
             ValidationException
         ) as e:
             if isinstance(e, AssertionError):
                 logger.error(
                     f'HTML Request Failed'
-                    '\nResponse: {print_response_url(response_url)}\nResponse Status: {response_url.status}'
+                    f'\nResponse: {format_response(response)}'
                 )
-            elif isinstance(e, (urllib.error.HTTPError, urllib.error.ContentTooShortError)):
-                logger.error(
-                    f'URL Lib Error')
             elif isinstance(e, ValidationException):
                 logger.error(
-                    f'Validation Failed\nResponse: {print_response_url(response_url)}')
+                    f'Validation Failed\nResponse: {format_response(response)}')
             else:
                 # ValueError (e.g. National API returns error message that cannot be converted to an int)
                 logger.error(f'Exception')
@@ -104,7 +97,7 @@ def query_and_upload(
 
     partition_key = f"{region_loadshedding}-{suffix}"
 
-    if data_recent is None or data != data_recent:
+    if True or data_recent is None or data != data_recent:
         logger.info('Scraped data differs from most recent data')
 
         # Upload the data to dynamodb
